@@ -1,0 +1,18 @@
+'!!!
+html
+  head
+    title Foo
+  body
+    bar = 23
+    // this is a comment
+    h1#hdr(background="foo(1) \"hah!\"").
+      | Bar
+      |
+        baz
+      //
+          multiline
+          comment
+    p.fred.fly
+      | This is some text which
+      | shows some multi-line text
+    .foo#xid divtext
