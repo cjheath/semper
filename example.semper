@@ -1,12 +1,12 @@
 '!!!
 html
   head
-    title Foo
+    title #{laugh}
   body
-    bar = 23
+    bar = 'sur'+'vive'
     // this is a comment
     h1#hdr(background="foo(1) &dquot;hah!&dquot;").
-      | Bar
+      | Bar #{"'These quotes should \"" + bar + '"\', he said'} hopefully
       //
 	  multiline
 	  comment
