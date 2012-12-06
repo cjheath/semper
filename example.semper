@@ -5,14 +5,17 @@ html
   body
     bar = 23
     // this is a comment
-    h1#hdr(background="foo(1) \"hah!\"").
+    h1#hdr(background="foo(1) &dquot;hah!&dquot;").
       | Bar
-      |
-        baz
       //
-          multiline
-          comment
+	  multiline
+	  comment
     p.fred.fly
       | This is some text which
-      | shows some multi-line text
+      | shows a multi-line example
+    p.multi.line.mode
+      |
+	This is some more text which
+	   illustrates indented multi-line mode
+	  foo
     .foo#xid divtext
