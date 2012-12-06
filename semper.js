@@ -1,5 +1,6 @@
 /*
  * Jade/Slim-style micro-templating in Javascript
+ * Copyright (c) Clifford Heath 2012. MIT License.
  */
 Semper = {
   // Simple string width calculator with tab expansion
