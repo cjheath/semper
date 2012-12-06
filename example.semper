@@ -5,7 +5,7 @@ html
   body
     bar = 'sur'+'vive'
     // this is a comment
-    h1#hdr(background="foo(1) &dquot;hah!&dquot;").
+    h1#hdr(background="foo(1) &quot;hah!&quot;")
       | Bar #{"'These quotes should \"" + bar + '"\', he said'} hopefully
       //
 	  multiline
@@ -13,9 +13,21 @@ html
     p.fred.fly
       | This is some text which
       | shows a multi-line example
-    p.multi.line.mode
-      |
-	This is some more text which
-	   illustrates indented multi-line mode
-	  foo
+      p.multi.line.mode
+	|
+	  This is some more text <which>
+	     illustrates indented multi-line
+	    mode
+    p.alternate.multi.line.mode.
+      some
+	 text
     .foo#xid divtext
+    #survivor= bar
+      This text included after the above is noisily evalled & is escaped
+    #survivor!= "<unescaped tag>"
+    #hiddencode- var x = 2*3;
+      This text included after the above is silently evalled
+    //-
+      This is a multi-line
+      comment for the source only,
+      and won't be output
