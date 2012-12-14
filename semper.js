@@ -7,7 +7,8 @@ Semper = {
     var split_lines_re = 
 	// Bah, negative look-behind doesn't work: Split up lines where they don't have a trailing backslash
 	// /(?!\\)\r*\n\r*/
-	/\r*\n\r*/,			// Split up lines
+	/\r*\n\r*/,
+	// Regular expression to split up each line
 	re = /^(\s*)((!!!|\/\/|\||[a-zA-Z#.][a-zA-Z0-9_#.]*[a-zA-Z0-9_#])(?:\(((?:'[^']*'|"[^"]*"|[^)])*)\))?((?:!?[-.=:]| =)?)\s*(.*))/,
 	// Simple string width calculator with tab expansion
 	text_width = function(text) {
@@ -20,10 +21,12 @@ Semper = {
 	  }
 	  return c;
 	},
-	parsed = [],
-	emit = function(m, w) {
+	parsed = [],				// Array of parsed output expressions
+	emit = function(text, w) {		// Parse text and emit the output expressions
+	  var m = re.exec(text);
 	  if (m) {
-	    var rest = m[5] != ':' ? m[6] : '';
+	    var nested = m[5] == ':',
+		rest = nested ? '' : m[6];	// Indexes into 'm' depend on the regexp above
 	    w = w || text_width(m[1]);
 	    parsed.push({
 	      level: w,				// The width of the leading white-space
@@ -33,17 +36,15 @@ Semper = {
 	      op: m[5],				// A trailing op
 	      rest: rest			// Rest of the line of text
 	    });
-	    if (m[5] == ':')			// A sub-statement seperated by a colon
-	      emit(re.exec(m[6]), w+2);		// Default to 2 additional indent levels
+	    if (nested)				// A sub-statement seperated by a colon
+	      emit(m[6], w+2);			// Default to 2 additional indent levels
 	  }
+	  // Uncomment this for complaints about bad template lines:
+	  //else if (text.length > 0) console.log("Unmatched: '"+text+"'");
 	};
 
-    text.
-      split(split_lines_re).
-      forEach(function(v) {
-	var match = re.exec(v);
-	emit(match);
-      });
+    // Compile the template by splitting it into lines and parsing each line:
+    text.split(split_lines_re).forEach(function(v) { emit(v); });
     return parsed;
   },
 
@@ -51,9 +52,9 @@ Semper = {
 
   expand: function(template) {
     var args = Array.prototype.slice.call(arguments, 1);
-        lastarg = args[args.length-1];
+        lastarg = args[args.length-1];	// Get initial vars from the arguments
         vars = (typeof lastarg === 'object') ? args.pop() : {};
-	escape = function(t) {
+	escape = function(t) {		// Minimal HTML escaping function. If you care, extend it.
 	  return t.split(/(['"&<>])/).
 	    map(function(f) {
 	      return {
@@ -64,7 +65,7 @@ Semper = {
 	      }[f] || f;
 	    }).join('');
 	},
-	evaluate = function(t) {
+	evaluate = function(t) {	// Evaluate code in the current data context
 	  with (vars) {
 	    try {
 	      return eval(t);
@@ -74,25 +75,24 @@ Semper = {
 	    }
 	  }
 	},
-        substitute = function(t) {
+        substitute = function(t) {	// Perform expansion of #{...} inside text
 	  return t.
 	    // Split the text around #{...}, taking care with embedded JS string constants
 	    // If you don't like #{...}, feel free to tweak this regexp.
 	    split(/(#\{(?:'(?:\\'|[^'])*'|"(?:\\"|[^"])*"|.)*)\}/).
 	    map(function(f) {
-	      if (f.substr(0,2) != '#{')
+	      if (f.substr(0,2) != '#{')  // } to match the open one
 		return f;
 	      return escape(evaluate(f.substr(2)));
 	    }).
 	    join('');
-	  },
-        stack = [];
+	},
+        stack = [];			// The stack; contains closing tags and parsing mode
 
-    return template.
+    return template.			// Map each line of the template into output
       map(function(v) {
-	if (v === null) return '';  // Ignore unmatched lines
 	with (v) {
-	  var top = null,
+	  var top = null,		// Reference to the top of the stack
 	      text = '';
 
 	  // Pop back to the level of the current line, emitting closing tags
