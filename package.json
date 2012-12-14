@@ -6,6 +6,7 @@
     "type": "git",
     "url": "git://github.com/cjheath/semper.git"
   },
+  "main": "./semper.js",
   "author": "Clifford Heath",
   "license": "MIT"  
 }
