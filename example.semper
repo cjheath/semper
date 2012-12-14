@@ -21,13 +21,16 @@ html
     MyFunkyHeader = 'A list-item header'
     00 This line won't match
     ul: li#foo(a="b"): h4= MyFunkyHeader
+      li#bar: h4 Second header
     p.alternate.multi.line.mode.
       some
 	 text
     .foo#xid divtext
     #survivor= bar
       This text included after the above is noisily evalled & is escaped
-    #survivor!= "<unescaped tag>"
+    #survivor2!= "<unescaped tag>"
+    #survivor3!=
+      "<This will be ignored; evaluated code must be inline>"
     #hiddencode- var x = 2*3;
       This text included after the above is silently evalled
     //-
