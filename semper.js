@@ -22,7 +22,7 @@ Semper = {
 	  return c;
 	},
 	parsed = [],				// Array of parsed output expressions
-	emit = function(text, w) {		// Parse text and emit the output expressions
+	parse_line = function(text, row, w) {	// Parse text and emit the output expressions
 	  var m = re.exec(text);
 	  if (m) {
 	    var nested = m[5] == ':',
@@ -34,17 +34,18 @@ Semper = {
 	      cmd: m[3],			// The leading word or token
 	      attrs: m[4]||'',			// The contents of a parenthesised attribute list
 	      op: m[5],				// A trailing op
-	      rest: rest			// Rest of the line of text
+	      rest: rest,			// Rest of the line of text
+	      row: row				// Line number in the input
 	    });
 	    if (nested)				// A sub-statement seperated by a colon
-	      emit(m[6], w+2);			// Default to 2 additional indent levels
+	      parse_line(m[6], row, w+2);	// Default to 2 additional indent levels
 	  }
 	  // Uncomment this for complaints about bad template lines:
 	  //else if (text.length > 0) console.log("Unmatched: '"+text+"'");
 	};
 
     // Compile the template by splitting it into lines and parsing each line:
-    text.split(split_lines_re).forEach(function(v) { emit(v); });
+    text.split(split_lines_re).forEach(function(line,row) { parse_line(line, row); });
     return parsed;
   },
 
@@ -66,32 +67,32 @@ Semper = {
 	      }[f] || f;
 	    }).join('');
 	},
-	evaluate = function(t, r) {	// Evaluate code in the current data context
+	evaluate = function(t, row) {	// Evaluate code in the current data context
 	  with (context) {
 	    try {
 	      return eval(t);
 	    } catch (e) {
-	      console.log("At "+r+": Error evaluating '"+t+"': "+e.text+" in the context of ", context);
+	      console.log("At "+(row+1)+": Error evaluating '"+t+"': "+e.text+" in the context of ", context);
 	      return nil;
 	    }
 	  }
 	},
-        substitute = function(t) {	// Perform expansion of #{...} inside text
+        substitute = function(t, row) {	// Perform expansion of #{...} inside text
 	  return t.
 	    // Split the text around #{...}, taking care with embedded JS string constants
 	    // If you don't like #{...}, feel free to tweak this regexp.
-	    split(/(#\{(?:'(?:\\'|[^'])*'|"(?:\\"|[^"])*"|.)*)\}/).
+	    split(/(#\{(?:'(?:\\'|[^'])*'|"(?:\\"|[^"])*"|\{[^}]*}|[^}])*)\}/).
 	    map(function(f) {
 	      if (f.substr(0,2) != '#{')  // } to match the open one
 		return f;
-	      return escape(evaluate(f.substr(2)));
+	      return escape(evaluate(f.substr(2), row));
 	    }).
 	    join('');
 	},
         stack = [];			// The stack; contains closing tags and parsing mode
 
     return template.			// Map each line of the template into output
-      map(function(node, row) {
+      map(function(node) {
 	with (node) {
 	  var top = null,		// Reference to the top of the stack
 	      text = '';
@@ -126,7 +127,7 @@ Semper = {
 		stack.push({level: level, close:'', mode: 'text'});
 	      else
 		text +=
-		  substitute(nw.substr(2)) +
+		  substitute(nw.substr(2), row) +
 		  "\n";
 	      break;
 
@@ -155,7 +156,7 @@ Semper = {
 		tag+
 		(id === null ? '' : ' id="'+id+'"') +
 		(classes === '' ? '' : ' class="'+classes.trim()+'"') +
-		(attrs ? ' '+substitute(attrs) : '') +
+		(attrs ? ' '+substitute(attrs, row) : '') +
 		">";
 
 	      // Deal with the tag content:
@@ -178,7 +179,7 @@ Semper = {
 		top['mode'] = 'text';
 		break;
 	      case '':
-		text += (rest === '' ? '\n' : substitute(rest));
+		text += (rest === '' ? '\n' : substitute(rest, row));
 	      }
 	      break;
 
@@ -203,7 +204,7 @@ Semper = {
 	    if (!top.text_depth)
 	      top.text_depth = level;
 	    text +=     // handle additional indentation
-	      new Array(level-top.text_depth).join(' ') + escape(substitute(nw)) + "\n";
+	      new Array(level-top.text_depth).join(' ') + escape(substitute(nw, row)) + "\n";
 	    break;
 
 /* Unnecessary; any unknown mode means discard

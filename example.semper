@@ -36,8 +36,7 @@ html
       +home_address
 	p.alternate.multi.line.mode
 	  |
-	    Home address is at: #{street}
-	         in the suburb: #{suburb}
+	    Home address is at: #{street} {in the suburb}: #{suburb}
     .foo#xid divtext
     #survivor2!= "<unescaped tag>"
     #survivor3!=
