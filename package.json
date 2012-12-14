@@ -1,0 +1,11 @@
+{
+  "name": "semper",
+  "version": "0.0.0",
+  "homepage": "https://github.com/cjheath/semper",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/cjheath/semper.git"
+  },
+  "author": "Clifford Heath",
+  "license": "MIT"  
+}
