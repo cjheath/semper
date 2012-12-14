@@ -4,7 +4,11 @@
  */
 Semper = {
   parse: function (text) {
-    var re = /^(\s*)((!!!|\/\/|\||[a-zA-Z#.][a-zA-Z0-9_#.]*[a-zA-Z0-9_#])(?:\(((?:'[^']*'|"[^"]*"|[^)])*)\))?((?:!?[-.=]| =)?)\s*(.*))/,
+    var split_lines_re = 
+	// Bah, negative look-behind doesn't work: Split up lines where they don't have a trailing backslash
+	// /(?!\\)\r*\n\r*/
+	/\r*\n\r*/,			// Split up lines
+	re = /^(\s*)((!!!|\/\/|\||[a-zA-Z#.][a-zA-Z0-9_#.]*[a-zA-Z0-9_#])(?:\(((?:'[^']*'|"[^"]*"|[^)])*)\))?((?:!?[-.=:]| =)?)\s*(.*))/,
 	// Simple string width calculator with tab expansion
 	text_width = function(text) {
 	  var i, c = 0;
@@ -15,24 +19,33 @@ Semper = {
 	      c++;
 	  }
 	  return c;
+	},
+	parsed = [],
+	emit = function(m, w) {
+	  if (m) {
+	    var rest = m[5] != ':' ? m[6] : '';
+	    w = w || text_width(m[1]);
+	    parsed.push({
+	      level: w,				// The width of the leading white-space
+	      nw: m[2],				// all following the leading whitespace
+	      cmd: m[3],			// The leading word or token
+	      attrs: m[4]||'',			// The contents of a parenthesised attribute list
+	      op: m[5],				// A trailing op
+	      rest: rest			// Rest of the line of text
+	    });
+	    if (m[5] == ':')			// A sub-statement seperated by a colon
+	      emit(re.exec(m[6]), w+2);		// Default to 2 additional indent levels
+	  }
 	};
 
-    return text.
-      // split(/(?!\\)\r*\n\r*/).		// Bah, negative look-behind doesn't work: Split up lines where they don't have a trailing backslash
-      split(/\r*\n\r*/).			// Split up lines
-      map(function(v) {				// Break each line into a hash (or null)
+    text.
+      split(split_lines_re).
+      forEach(function(v) {
 	var match = re.exec(v);
-	return match === null
-	  ? null
-	  : { level: text_width(match[1]),	// The width of the leading white-space
-	      nw: match[2],			// all following the leading whitespace
-	      cmd: match[3],			// The leading word or token
-	      attrs: match[4],			// The contents of a parenthesised attribute list
-	      op: match[5],			// A trailing op
-	      rest: match[6]			// Rest of the line of text
-	    };
+	emit(match);
       });
-    },
+    return parsed;
+  },
 
   // compile: function(parsed) { ... return the template compiled to a function object */ }
 
@@ -41,18 +54,24 @@ Semper = {
         lastarg = args[args.length-1];
         vars = (typeof lastarg === 'object') ? args.pop() : {};
 	escape = function(t) {
-	  return t.split(/(['"&<>])/).map(function(f) {
-	    return {
-	      '"': "&quot;",
-	      '<': "&lt;",
-	      '>': "&gt;",
-	      '&': "&amp;",
-	    }[f] || f;
-	  }).join('');
+	  return t.split(/(['"&<>])/).
+	    map(function(f) {
+	      return {
+		'"': "&quot;",
+		'<': "&lt;",
+		'>': "&gt;",
+		'&': "&amp;",
+	      }[f] || f;
+	    }).join('');
 	},
 	evaluate = function(t) {
 	  with (vars) {
-	    return eval(t);
+	    try {
+	      return eval(t);
+	    } catch (e) {
+	      console.log("Error evaluating '"+t+"': "+e.text);
+	      return '';
+	    }
 	  }
 	},
         substitute = function(t) {
@@ -93,7 +112,7 @@ Semper = {
 
 	    case ' =' == op:    // Assign a variable
 	      with (vars) {
-		vars[cmd] = eval(rest);
+		vars[cmd] = evaluate(rest);
 	      }
 	      break;
 

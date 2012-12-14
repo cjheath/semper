@@ -18,6 +18,8 @@ html
 	  This is some more text <which>
 	     illustrates indented multi-line
 	    mode
+    MyFunkyHeader = 'A list-item header'
+    ul: li#foo(a="b"): h4= MyFunkyHeader
     p.alternate.multi.line.mode.
       some
 	 text
