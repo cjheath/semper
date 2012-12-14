@@ -9,7 +9,7 @@ Semper = {
 	// /(?!\\)\r*\n\r*/
 	/\r*\n\r*/,
 	// Regular expression to split up each line
-	re = /^(\s*)((!!!|\/\/|\||[a-zA-Z#.][a-zA-Z0-9_#.]*[a-zA-Z0-9_#])(?:\(((?:'[^']*'|"[^"]*"|[^)])*)\))?((?:!?[-.=:]| =)?)\s*(.*))/,
+	re = /^(\s*)((\+|!!!|\/\/|\||[a-zA-Z#.][a-zA-Z0-9_#.]*[a-zA-Z0-9_#])(?:\(((?:'[^']*'|"[^"]*"|[^)])*)\))?((?:!?[-.=:]| =)?)\s*(.*))/,
 	// Simple string width calculator with tab expansion
 	text_width = function(text) {
 	  var i, c = 0;
@@ -53,7 +53,8 @@ Semper = {
   expand: function(template) {
     var args = Array.prototype.slice.call(arguments, 1);
         lastarg = args[args.length-1];	// Get initial vars from the arguments
-        vars = (typeof lastarg === 'object') ? args.pop() : {};
+        vars = (typeof lastarg === 'object') ? args.pop() : {},
+	context = vars;
 	escape = function(t) {		// Minimal HTML escaping function. If you care, extend it.
 	  return t.split(/(['"&<>])/).
 	    map(function(f) {
@@ -65,13 +66,13 @@ Semper = {
 	      }[f] || f;
 	    }).join('');
 	},
-	evaluate = function(t) {	// Evaluate code in the current data context
-	  with (vars) {
+	evaluate = function(t, r) {	// Evaluate code in the current data context
+	  with (context) {
 	    try {
 	      return eval(t);
 	    } catch (e) {
-	      console.log("Error evaluating '"+t+"': "+e.text);
-	      return '';
+	      console.log("At "+r+": Error evaluating '"+t+"': "+e.text+" in the context of ", context);
+	      return nil;
 	    }
 	  }
 	},
@@ -90,14 +91,15 @@ Semper = {
         stack = [];			// The stack; contains closing tags and parsing mode
 
     return template.			// Map each line of the template into output
-      map(function(v) {
-	with (v) {
+      map(function(node, row) {
+	with (node) {
 	  var top = null,		// Reference to the top of the stack
 	      text = '';
 
 	  // Pop back to the level of the current line, emitting closing tags
 	  while ((top = stack[stack.length-1]) && top.level >= level) {
 	    var popped = stack.pop();
+	    context = popped.context || context;
 	    text += popped.close;
 	  }
 
@@ -111,9 +113,12 @@ Semper = {
 	      break;
 
 	    case ' =' == op:    // Assign a variable
-	      with (vars) {
-		vars[cmd] = evaluate(rest);
-	      }
+	      context[cmd] = evaluate(rest, row);
+	      break;
+
+	    case '+' == cmd:
+	      stack.push({level: level, close:'', context: context});
+	      context = evaluate(rest, row) || context;
 	      break;
 
 	    case '|' == cmd:	// Literal text, single and multi-line
@@ -165,7 +170,7 @@ Semper = {
 	      case '-':	  // code whose output is ignored
 		top['mode'] = 'discard';
 		if (rest)
-		  evaled = evaluate(rest);
+		  evaled = evaluate(rest, row);
 		if (op === '=')
 		  evaled = escape(evaled);
 		if (op !== '-')
@@ -198,7 +203,7 @@ Semper = {
 	    if (!top.text_depth)
 	      top.text_depth = level;
 	    text +=     // handle additional indentation
-	      new Array(level-top.text_depth).join(' ') + escape(nw) + "\n";
+	      new Array(level-top.text_depth).join(' ') + escape(substitute(nw)) + "\n";
 	    break;
 
 /* Unnecessary; any unknown mode means discard

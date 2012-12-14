@@ -3,31 +3,42 @@ html
   head
     title #{laugh}
   body
-    bar = 'sur'+'vive'
     // this is a comment
+    bar = 'sur'+'vive'
     h1#hdr(background="foo(1) &quot;hah!&quot;")
       | Bar #{"'These quotes should \"" + bar + '"\', he said'} hopefully
       //
 	  multiline
 	  comment
-    p.fred.fly
-      | This is some text which
-      | shows a multi-line example
-      p.multi.line.mode
-	|
-	  This is some more text <which>
-	     illustrates indented multi-line
-	    mode
-    MyFunkyHeader = 'A list-item header'
-    00 This line won't match
-    ul: li#foo(a="b"): h4= MyFunkyHeader
-      li#bar: h4 Second header
-    p.alternate.multi.line.mode.
-      some
-	 text
-    .foo#xid divtext
     #survivor= bar
       This text included after the above is noisily evalled & is escaped
+    p.fred.fly
+      +person
+	| This is some text which
+	| shows a multi-line example
+	| and interpolates the name of #{given_name}
+	| #{family_name}
+	p.multi.line.mode
+	  |
+	    This is some more text <which>
+	       illustrates indented multi-line
+	      mode
+	subst = 'substituted'
+	p.another.multi.line.mode.
+	  Text inserted and not evaluated but is #{subst}
+    MyFunkyHeader = 'A list-item header'
+    00 This line won't match
+    -Neither will this
+    ul: li#foo(a="b"): h4= MyFunkyHeader
+      li#bar: h4 Second header
+    +person
+      li= given_name + ' ' + family_name
+      +home_address
+	p.alternate.multi.line.mode
+	  |
+	    Home address is at: #{street}
+	         in the suburb: #{suburb}
+    .foo#xid divtext
     #survivor2!= "<unescaped tag>"
     #survivor3!=
       "<This will be ignored; evaluated code must be inline>"
