@@ -1,4 +1,4 @@
-require('./semper');
+var Semper = require('./semper');
 var fs = require('fs');
 
 var sample_data = {
