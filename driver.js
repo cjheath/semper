@@ -1,4 +1,4 @@
-require('./semper');
+var semper = require('./semper');
 var fs = require('fs');
 
 var sample_data = {
@@ -17,8 +17,8 @@ process.argv.slice(2).forEach(function (val, index, array) {
   fs.readFile(val, function(err, contents) {
     if (err)
       throw err;
-    var parsed = Semper.parse(contents.toString());
-    var expanded = Semper.expand(parsed, 'option1', sample_data);
+    var parsed = semper.parse(contents.toString());
+    var expanded = semper.expand(parsed, 'option1', sample_data);
     console.log(expanded);
   });
 });

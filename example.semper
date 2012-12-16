@@ -14,8 +14,8 @@ html
       This text included after the above is noisily evalled & is escaped
     p.fred.fly
       +person
-	| This is some text which
-	| shows a multi-line example
+	| This is some text which shows
+	| a multi-line example including a blank line
 	| and interpolates the name of #{given_name}
 	| #{family_name}
 	p.multi.line.mode
