@@ -17,7 +17,7 @@
 }(this, function () {
   var parse =
     function (text) {
-      var split_lines_re = 
+      var splitLinesRE = 
 	  // Bah, negative look-behind doesn't work: Split up lines where they don't have a trailing backslash
 	  // /(?!\\)\r*\n\r*/
 	  /\r*\n\r*/,
@@ -63,7 +63,7 @@
 	  re = /^(\s*)((\+|!!!|\/\/|\||[a-zA-Z#.](?:[-#._a-zA-Z0-9]*[_a-zA-Z0-9])?)?(?:\(((?:'[^']*'|"[^"]*"|[^)])*)\))?(!?[-.=:]| =)?\s*(.*))/,
 
 	  // Simple string width calculator with tab expansion
-	  text_width = function(text) {
+	  textWidth = function(text) {
 	    var i, c = 0;
 	    for (i = 0; i < text.length; i++) {
 	      if (text.charAt(i) === '\t')
@@ -86,12 +86,12 @@
 	    parsed.push(o);
 	    s.push(o);
 	  },
-	  parse_line = function(text, row, w) {	// Parse text and emit the output expressions
+	  parseLine = function(text, row, w) {	// Parse text and emit the output expressions
 	    var m = re.exec(text);
 	    if (m) {
 	      var nested = m[5] == ':',
 		  rest = nested ? '' : m[6];	// Indexes into 'm' depend on the regexp above
-	      w = w || text_width(m[1]);
+	      w = w || textWidth(m[1]);
 	      push({
 		level: w,			// The width of the leading white-space
 		nw: m[2],			// all following the leading whitespace
@@ -102,14 +102,14 @@
 		row: row			// Line number in the input
 	      });
 	      if (nested)			// A sub-statement seperated by a colon
-		parse_line(m[6], row, w+2);	// Default to 2 additional indent levels
+		parseLine(m[6], row, w+2);	// Default to 2 additional indent levels
 	    }
 	    // Uncomment this for complaints about bad template lines:
 	    else if (text.length > 0) console.log("Unmatched at "+(row+1)+": '"+text+"'");
 	  };
 
       // Compile the template by splitting it into lines and parsing each line:
-      text.split(split_lines_re).forEach(function(line,row) { parse_line(line, row); });
+      text.split(splitLinesRE).forEach(function(line,row) { parseLine(line, row); });
       pop(0);
       return parsed;
     };
@@ -291,10 +291,10 @@
 	      break;
 
 	    case 'text':  // mode of a multi-line | or comment
-	      if (!top.text_depth)
-		top.text_depth = level;
+	      if (!top.textDepth)
+		top.textDepth = level;
 	      text +=     // handle additional indentation
-		new Array(level-top.text_depth).join(' ') + escape(substitute(nw, row)) + "\n";
+		new Array(level-top.textDepth).join(' ') + escape(substitute(nw, row)) + "\n";
 	      break;
 
 /* Unnecessary; any unknown mode means skip
