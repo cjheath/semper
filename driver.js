@@ -11,7 +11,7 @@ var sample_data = {
     given_name: "Joe",
     family_name: "Smith",
     birth_date: null,
-    all_unit: [
+    enrolled_units: [
       "Algorithms",
       "Data Processing"
     ]

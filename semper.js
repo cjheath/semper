@@ -257,7 +257,7 @@
 		case '!=':  // code yielding unescaped output
 		case '=':	  // code yielding escaped output
 		case '-':	  // code whose output is ignored
-		  top['mode'] = 'discard';
+		  top['mode'] = 'skip';
 		  if (rest)
 		    evaled = evaluate(rest, row);
 		  if (op === '=')
@@ -277,11 +277,11 @@
 		if (rest === '') {
 		  stack.push(top = {level: level, close: '-->\n', mode: 'text'});
 		  if (op === '-') {
-		    top.mode = 'discard';
+		    top.mode = 'skip';
 		    top.close = '';
 		  } else
 		    text += "<!--\n";
-		} else
+		} else if (op !== '-')
 		  text += "<!-- "+rest+" -->\n";
 		break;
 

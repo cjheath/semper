@@ -1,4 +1,4 @@
-!!! 5
+!!!
 html
   head
     title Example of conditionals and looping
@@ -11,12 +11,8 @@ html
 	    | born on #{current}
 	  empty
 	    | Birthdate is unknown
-	+all_unit
+	+enrolled_units
+	  //- Reverse the order of the items:
 	  + (function(v){ return v.reverse();})(current)
-	    present
-	      ul
-		each
-		  li #{current}
-	    empty
-	      h3 There are no items
-	    | xyz
+	    present: ul: each: li #{current}
+	    empty: h3 There are no items
