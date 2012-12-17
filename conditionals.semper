@@ -1,0 +1,22 @@
+!!! 5
+html
+  head
+    title Example of conditionals and looping
+  body
+    .
+      +person
+	h2 #{given_name} #{family_name}
+	+birth_date
+	  present
+	    | born on #{current}
+	  empty
+	    | Birthdate is unknown
+	+all_unit
+	  + (function(v){ return v.reverse();})(current)
+	    present
+	      ul
+		each
+		  li #{current}
+	    empty
+	      h3 There are no items
+	    | xyz

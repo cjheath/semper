@@ -10,6 +10,11 @@ var sample_data = {
     },
     given_name: "Joe",
     family_name: "Smith",
+    birth_date: null,
+    all_unit: [
+      "Algorithms",
+      "Data Processing"
+    ]
   }
 };
 
@@ -23,7 +28,7 @@ process.argv.slice(2).forEach(function (val, index, array) {
 	throw err;
       var parsed = semper.parse(contents.toString());
       if (verbose) console.log(parsed);
-      var expanded = semper.expand(parsed, 'option1', sample_data);
+      var expanded = semper.expand(parsed, null, 'option1', sample_data);
       console.log(expanded);
     });
   }

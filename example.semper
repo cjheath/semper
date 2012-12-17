@@ -27,8 +27,6 @@ html
 	p.another.multi.line.mode.
 	  Text inserted and not evaluated but is #{subst}
     MyFunkyHeader = 'A list-item header'
-    00 This line won't match
-    -Neither will this
     ul: li#foo(a="b"): h4= MyFunkyHeader
       li#bar: h4 Second header
     +person

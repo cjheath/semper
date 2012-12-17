@@ -15,14 +15,15 @@
         root.Semper = factory();
   }
 }(this, function () {
-  return {
-    parse: function (text) {
+  var parse =
+    function (text) {
       var split_lines_re = 
 	  // Bah, negative look-behind doesn't work: Split up lines where they don't have a trailing backslash
 	  // /(?!\\)\r*\n\r*/
 	  /\r*\n\r*/,
 	  /*
 	   * Regular expression to split up each line.
+	   *
 	   * Here, I'll explain it for you:
 	    ^			Start at the start of the line
 	    (\s*)		Match all the leading white-space
@@ -41,7 +42,7 @@
 	      (?:		Group an optional attribute list, but don't return it whole
 		\(		an actual parenthesis
 		(		return the contents in a match group 'attrs'
-		  (?:		group, but don't use a match slot
+		  (?:		group alternates, but don't return them
 		    '[^']*'	a single-quoted string
 		  | "[^"]*"	a double-quoted string
 		  | [^)]	Anything except a closing parenthesis
@@ -50,16 +51,17 @@
 		\)		The closing parenthesis
 	      )?		The entire attribute list is optional
 	      (			Group and return alternate forms of "operator"
-		!?		an optional bang
-		[-.=:]		One of these characters
+		!?		an optional bang and
+		[-.=:]		one of these characters
 	      |  =		a literal space followed by an equals sign
 	      )?		The whole operator is optional
 	      )			
 	      \s*		any amount of space
-	      (.*)		the "rest"
+	      (.*)		The "rest"
 	    )
 	   */
 	  re = /^(\s*)((\+|!!!|\/\/|\||[a-zA-Z#.](?:[-#._a-zA-Z0-9]*[_a-zA-Z0-9])?)?(?:\(((?:'[^']*'|"[^"]*"|[^)])*)\))?(!?[-.=:]| =)?\s*(.*))/,
+
 	  // Simple string width calculator with tab expansion
 	  text_width = function(text) {
 	    var i, c = 0;
@@ -72,13 +74,25 @@
 	    return c;
 	  },
 	  parsed = [],				// Array of parsed output expressions
+	  s = [], t,
+	  pop = function(l) {
+	    while ((t = s[s.length-1]) && t.level >= l)
+	      s.pop().size = parsed.length-t.pos;// Subtree size includes the current node
+	  },
+	  push = function(o) {			// Push a compiled instruction, calculating subtree size
+	    if (o.nw == '') return;		// Disregard blank lines
+	    o.pos = parsed.length;		// Record the position of this instruction
+	    pop(o.level);
+	    parsed.push(o);
+	    s.push(o);
+	  },
 	  parse_line = function(text, row, w) {	// Parse text and emit the output expressions
 	    var m = re.exec(text);
 	    if (m) {
 	      var nested = m[5] == ':',
 		  rest = nested ? '' : m[6];	// Indexes into 'm' depend on the regexp above
 	      w = w || text_width(m[1]);
-	      parsed.push({
+	      push({
 		level: w,			// The width of the leading white-space
 		nw: m[2],			// all following the leading whitespace
 		cmd: m[3],			// The leading word or token
@@ -96,16 +110,22 @@
 
       // Compile the template by splitting it into lines and parsing each line:
       text.split(split_lines_re).forEach(function(line,row) { parse_line(line, row); });
+      pop(0);
       return parsed;
-    },
+    };
 
-    // compile: function(parsed) { ... return the template compiled to a function object */ }
-
-    expand: function(template) {
-      var args = Array.prototype.slice.call(arguments, 1);
-	  lastarg = args[args.length-1];	// Get initial vars from the arguments
-	  vars = (typeof lastarg === 'object') ? args.pop() : {},
-	  context = vars;
+  var expand = 
+    function(
+	template,		// The template is an array of instructions
+	subtree			// subtree is which subtree to process, or all
+	// vars			// The last argument passed is a data context for expression evaluation
+      ) {
+      var args = Array.prototype.slice.call(arguments, 1),
+	  lastarg = args[args.length-1],	// Get initial vars from the arguments
+	  vars = lastarg,
+	  current = vars,			// The data current we drilled-down to
+          first = (subtree || 0),		// Default to processing the entire template
+	  limit = subtree ? template[subtree].size : template.length,
 	  escape = function(t) {		// Minimal HTML escaping function. If you care, extend it.
 	    return t.split(/(['"&<>])/).
 	      map(function(f) {
@@ -117,12 +137,12 @@
 		}[f] || f;
 	      }).join('');
 	  },
-	  evaluate = function(t, row) {	// Evaluate code in the current data context
-	    with (context) {
+	  evaluate = function(t, row) {	// Evaluate code in the context of current
+	    with (current) {
 	      try {
 		return eval(t);
 	      } catch (e) {
-		console.log("At "+(row+1)+": Error evaluating '"+t+"': "+e.text+" in the context of ", context);
+		console.log("At "+(row+1)+": Error evaluating '"+t+"': "+e.text+" in the context of ", current);
 		return '';
 	      }
 	    }
@@ -131,6 +151,7 @@
 	    return t.
 	      // Split the text around #{...}, taking care with embedded JS string constants
 	      // If you don't like #{...}, feel free to tweak this regexp.
+	      // What? You want me to explain this one also?
 	      split(/(#\{(?:'(?:\\'|[^'])*'|"(?:\\"|[^"])*"|\{[^}]*}|[^}])*)\}/).
 	      map(function(f) {
 		if (f.substr(0,2) != '#{')  // } to match the open one
@@ -141,7 +162,9 @@
 	  },
 	  stack = [];			// The stack; contains closing tags and parsing mode
 
+
       return template.			// Map each line of the template into output
+	slice(first, first+limit).	// Process just the requested part
 	map(function(node) {
 	  with (node) {
 	    var top = null,		// Reference to the top of the stack
@@ -153,7 +176,7 @@
 	    // Pop back to the level of the current line, emitting closing tags
 	    while ((top = stack[stack.length-1]) && top.level >= level) {
 	      var popped = stack.pop();
-	      context = popped.context || context;
+	      current = popped.current || current;
 	      text += popped.close;
 	    }
 
@@ -167,12 +190,12 @@
 		break;
 
 	      case ' =' == op:    // Assign a variable
-		context[cmd] = evaluate(rest, row);
+		current[cmd] = evaluate(rest, row);
 		break;
 
 	      case '+' == cmd:
-		stack.push({level: level, close:'', context: context});
-		context = evaluate(rest, row) || context;
+		stack.push({level: level, close:'', current: current});
+		current = evaluate(rest, row);
 		break;
 
 	      case '|' == cmd:	// Literal text, single and multi-line
@@ -184,19 +207,31 @@
 		    "\n";
 		break;
 
-/*
-	      case (/if|else|until|while|unless|each/.test(cmd)):
-		// REVISIT: No conditionals yet
+	      // Iteration:
+	      case cmd == 'each':
+		current.forEach(function(v) {
+		  text += expand(template, template[pos+1].pos, v);
+		});
+		top['mode'] = 'skip';
 		break;
-*/
 
+	      // Conditionals:
+	      case cmd == 'empty' || cmd == 'present':
+		if ((cmd == 'empty') == (!current || (typeof current === 'object' && current.length == 0)))
+		  text += expand(template, template[pos+1].pos, current);
+		stack.push({level: level, close:'', mode: 'skip'});
+		break;
+
+	      // Tags:
 	      case cmd && (/^[a-zA-Z.#]/.test(cmd)):
 		// Figure out the tag, id and classes
 		var tag = 'div';
 		var id = null;
 		var classes = '';
 		cmd.split(/(?=[#.])/).forEach(function(v) {
-		  if (v[0] === '.')
+		  if (v == '.')
+		    ; // Just a div, no class or id
+		  else if (v[0] === '.')
 		    classes += " "+v.substr(1);
 		  else if (v[0] === '#')
 		    id = v.substr(1);   // Blow away a previous ID if they used two
@@ -231,11 +266,13 @@
 		    text += evaled;
 		  top['mode'] = 'text';
 		  break;
+		case undefined:
 		case '':
 		  text += (rest === '' ? '\n' : substitute(rest, row));
 		}
 		break;
 
+	      // Comment
 	      case '//' == cmd:
 		if (rest === '') {
 		  stack.push(top = {level: level, close: '-->\n', mode: 'text'});
@@ -246,9 +283,6 @@
 		    text += "<!--\n";
 		} else
 		  text += "<!-- "+rest+" -->\n";
-		break;
-
-	      case cmd === undefined:
 		break;
 
 	      default:
@@ -263,8 +297,8 @@
 		new Array(level-top.text_depth).join(' ') + escape(substitute(nw, row)) + "\n";
 	      break;
 
-/* Unnecessary; any unknown mode means discard
-	    case 'discard': // After //-
+/* Unnecessary; any unknown mode means skip
+	    case 'skip': // After //-
 	      break;
  */
 	    }
@@ -273,6 +307,8 @@
 	}).
 	join('') +
 	stack.reverse().map(function(v){return v.close;}).join('');
-    }
+    };
+
+    return { parse: parse, expand: expand };
   }
-}));
+));
