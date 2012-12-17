@@ -13,13 +13,19 @@ var sample_data = {
   }
 };
 
+var verbose = false;
 process.argv.slice(2).forEach(function (val, index, array) {
-  fs.readFile(val, function(err, contents) {
-    if (err)
-      throw err;
-    var parsed = semper.parse(contents.toString());
-    var expanded = semper.expand(parsed, 'option1', sample_data);
-    console.log(expanded);
-  });
+  switch (val) {
+  case '-v':  verbose = true; break;
+  default:
+    fs.readFile(val, function(err, contents) {
+      if (err)
+	throw err;
+      var parsed = semper.parse(contents.toString());
+      if (verbose) console.log(parsed);
+      var expanded = semper.expand(parsed, 'option1', sample_data);
+      console.log(expanded);
+    });
+  }
 });
 

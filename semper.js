@@ -21,11 +21,45 @@
 	  // Bah, negative look-behind doesn't work: Split up lines where they don't have a trailing backslash
 	  // /(?!\\)\r*\n\r*/
 	  /\r*\n\r*/,
-	  // Regular expression to split up each line
-	  re = /^(\s*)((\+|!!!|\/\/|\||[a-zA-Z#.][a-zA-Z0-9_#.]*[a-zA-Z0-9_#])(?:\(((?:'[^']*'|"[^"]*"|[^)])*)\))?((?:!?[-.=:]| =)?)\s*(.*))/,
-	  /*   This breaks evaluate. I need to revisit it and see what I was trying to do here:
-	  re = /^(\s*)((?:(\+|!!!|\/\/|\||[a-zA-Z#.](?:[-a-zA-Z0-9_#.]*[a-zA-Z0-9_#])?)(?:\(((?:'[^']*'|"[^"]*"|[^)])*)\))?((?:!?[-.=:]| =)\s?)?)*(.*))/,
-	  */
+	  /*
+	   * Regular expression to split up each line.
+	   * Here, I'll explain it for you:
+	    ^			Start at the start of the line
+	    (\s*)		Match all the leading white-space
+	    (			Group everything else as match[1]
+	      (			Group the first word (the 'cmd'), which is one of:
+		\+		a plus sign,, for data drill-down
+	      |	!!!		a triple-bang, for the <html> tag
+	      |	\/\/		two slashes to introduce a comment
+	      |	\|		a pipe symbol, for literal text with interpolations
+	      | [#.a-zA-Z]	An alphanumeric tag, usually for an HTML element
+		(?:		Tags may contain or start with # and . for id/class
+		  [-#._a-zA-Z0-9]*  Continues with alphanumeric, or -.#_
+		  [_a-zA-Z0-9]	Must end with alphanumeric or underscore
+		)?
+	      )?		the cmd is optional
+	      (?:		Group an optional attribute list, but don't return it whole
+		\(		an actual parenthesis
+		(		return the contents in a match group 'attrs'
+		  (?:		group, but don't use a match slot
+		    '[^']*'	a single-quoted string
+		  | "[^"]*"	a double-quoted string
+		  | [^)]	Anything except a closing parenthesis
+		  )*		The above group, repeated as many times as necessary
+		)
+		\)		The closing parenthesis
+	      )?		The entire attribute list is optional
+	      (			Group and return alternate forms of "operator"
+		!?		an optional bang
+		[-.=:]		One of these characters
+	      |  =		a literal space followed by an equals sign
+	      )?		The whole operator is optional
+	      )			
+	      \s*		any amount of space
+	      (.*)		the "rest"
+	    )
+	   */
+	  re = /^(\s*)((\+|!!!|\/\/|\||[a-zA-Z#.](?:[-#._a-zA-Z0-9]*[_a-zA-Z0-9])?)?(?:\(((?:'[^']*'|"[^"]*"|[^)])*)\))?(!?[-.=:]| =)?\s*(.*))/,
 	  // Simple string width calculator with tab expansion
 	  text_width = function(text) {
 	    var i, c = 0;
@@ -156,7 +190,7 @@
 		break;
 */
 
-	      case (/^[a-zA-Z.#]/.test(cmd)):
+	      case cmd && (/^[a-zA-Z.#]/.test(cmd)):
 		// Figure out the tag, id and classes
 		var tag = 'div';
 		var id = null;
@@ -214,8 +248,11 @@
 		  text += "<!-- "+rest+" -->\n";
 		break;
 
+	      case cmd === undefined:
+		break;
+
 	      default:
-		throw "unrecognised command at "+(row+1);
+		throw "Unrecognised command at line "+(row+1)+': '+nw;
 	      }
 	      break;
 
