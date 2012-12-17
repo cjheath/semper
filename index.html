@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Semper Template Syntax Documentation by Example</title>
+<link href="http://fonts.googleapis.com/css?family=Droid+Sans+Mono|Ubuntu:400,700" rel="stylesheet" try="text/css">
+</link>
+<link href="assets/global.min.css" rel="stylesheet" type="text/css">
+</link>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
+</script>
+<script src="assets/global.min.js">
+</script>
+<meta name="description" content="An interative Syntax Documentation for the Semper Templating Engine">
+</meta>
+<link rel="author" href="https://plus.google.com/u/0/113306279128990179378">
+</link>
+</head>
+<body data-spy="scroll" data-target=".subnav" data-offset="150">
+<a href="https://github.com/cjheath/semper-syntax-docs">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub">
+</img>
+</a>
+<div class="container">
+<header class="jumbotron subhead">
+<h1>
+Semper Syntax Documentation
+<small>by example</small>
+</h1>
+<p class="lead">
+This <strong>interactive</strong> documentation illustrates the most important features of the Semper templating language.<br>
+You can play around with the examples
+(not all working yet, but getting there)
+and watch the html output in real time.<br>
+For more detailed explanations visit the&nbsp;
+<a href="https://github.com/cjheath/semper/">official documentation.</a>
+Most of this page was shamelessly stolen from Jade by naltatis
+</p>
+<div class="subnav">
+<ul class="nav nav-pills">
+<li><a href="#basics">Basics</a>
+</li>
+<li><a href="#id-classes">id, classes</a>
+</li>
+<li><a href="#nesting">Nesting</a>
+</li>
+<li><a href="#text">Text</a>
+</li>
+<li><a href="#variables">Variables</a>
+</li>
+<li><a href="#escaping">Escaping</a>
+</li>
+<li><a href="#attributes">Attributes</a>
+</li>
+<li><a href="#comments">Comments</a>
+</li>
+<li><a href="#if">Conditionals</a>
+</li>
+<li><a href="#for">Looping</a>
+</li>
+<li><a href="#about">about</a>
+</li>
+</ul>
+</div>
+</header>
+<section id="basics">
+<div class="page-header">
+<h2>Basics</h2>
+</div>
+<div class="row">
+<div class="span6">
+<div class="semperLabel">
+</div>
+<textarea class="size7 semper">!!! 5
+html
+ head
+   title my semper template
+ body
+   h1 Hello #{name}
+</textarea>
+<textarea class="size1 json">{&quot;name&quot;: &quot;Bob&quot;}
+</textarea>
+<div class="dataLabel">
+</div>
+</div>
+<div class="span6 right">
+<div class="htmlLabel">
+</div>
+<textarea class="size9 html" readonly=true>
+</textarea>
+</div>
+</div>
+</section>
+<section id="id-classes">
+<div class="page-header">
+<h2>id &amp; classes</h2>
+</div>
+<div class="row">
+<div class="span6">
+<textarea class="size5 semper">#content
+ .
+   .block
+     input#bar.foo1.foo2
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size5 html" readonly=true>
+</textarea>
+</div>
+</div>
+</section>
+<section id="nesting">
+<div class="page-header">
+<h2>Nesting</h2>
+</div>
+<div class="row">
+<div class="span6">
+<textarea class="size5 semper">ul#books
+ li
+   a(href=&quot;#book-a&quot;) Book A
+ li
+   a(href=&quot;#book-b&quot;) Book B
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size5 html" readonly=true>
+</textarea>
+</div>
+</div>
+<hr>
+</hr>
+<div class="row">
+<div class="span6">
+<textarea class="size4 semper">ul#books
+ li: a(href=&quot;#book-a&quot;) Book A
+   a(href=&quot;#book-a&quot;) Book A
+ li: a(href=&quot;#book-b&quot;) Book B
+   a(href=&quot;#book-b&quot;) Book B
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size4 html" readonly=true>
+</textarea>
+</div>
+</div>
+</section>
+<section id="text">
+<div class="page-header">
+<h2>Text</h2>
+</div>
+<div class="row">
+<div class="span6">
+<textarea class="size4 semper">h1 foo
++ book
+ h2\= name
+ h3 &quot;#{name}&quot; for #{price} &amp;euro;
+</textarea>
+<textarea class="size1 json">{&quot;book&quot;: {&quot;name&quot;: &quot;Hello&quot;, &quot;price&quot;: &quot;12.99&quot;}}
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size5 html" readonly=true>
+</textarea>
+</div>
+</div>
+<hr>
+</hr>
+<div class="row">
+<div class="span6">
+<textarea class="size4 semper">p
+ | foo bar
+ | hello world
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size4 html" readonly=true>
+</textarea>
+</div>
+</div>
+<hr>
+</hr>
+<div class="row">
+<div class="span6">
+<textarea class="size4 semper">p.
+ foo bar
+ hello world
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size4 html" readonly=true>
+</textarea>
+</div>
+</div>
+</section>
+<section id="variables">
+<div class="page-header">
+<h2>Variables</h2>
+</div>
+<div class="row">
+<div class="span6">
+<textarea class="size2 semper">foo = &quot;hello world&quot;
+h1= foo
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size2 html" readonly=true>
+</textarea>
+</div>
+</div>
+<hr>
+</hr>
+<div class="row">
+<div class="span6">
+<textarea class="size2 semper">foo = book.name + &quot; world&quot;
+h1= foo
+</textarea>
+<textarea class="size1 json">{&quot;book&quot;: {&quot;name&quot;: &quot;hello&quot;}}
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size4 html" readonly=true>
+</textarea>
+</div>
+</div>
+</section>
+<section id="escaping">
+<div class="page-header">
+<h2>Escaping</h2>
+</div>
+<div class="row">
+<div class="span6">
+<textarea class="size1 semper">li Hello &lt;em&gt;World&lt;/em&gt;
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size1 html" readonly=true>
+</textarea>
+</div>
+</div>
+<hr>
+</hr>
+<div class="row">
+<div class="span6">
+<textarea class="size2 semper">li= name
+li!= name
+</textarea>
+<textarea class="size1 json">{&quot;name&quot;: &quot;Hello &lt;em&gt;World&lt;/em&gt;&quot;}
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size4 html" readonly=true>
+</textarea>
+</div>
+</div>
+<hr>
+</hr>
+<div class="row">
+<div class="span6">
+<textarea class="size2 semper">li Say #{name}
+li Say &amp;#33;{name}
+</textarea>
+<textarea class="size1 json">{&quot;name&quot;: &quot;Hello &lt;em&gt;World&lt;/em&gt;&quot;}
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size4 html" readonly=true>
+</textarea>
+</div>
+</div>
+</section>
+<section id="attributes">
+<div class="page-header">
+<h2>Attributes</h2>
+</div>
+<div class="row">
+<div class="span6">
+<textarea class="size1 semper">input(type=&quot;text&quot;, placeholder=&quot;your name&quot;)
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size1 html" readonly=true>
+</textarea>
+</div>
+</div>
+<hr>
+</hr>
+<div class="row">
+<div class="span6">
+<textarea class="size1 semper">input(type=type, value='Hello #{name}')
+</textarea>
+<textarea class="size1 json">{&quot;type&quot;: &quot;text&quot;, &quot;name&quot;: &quot;Bob&quot;}
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size3 html" readonly=true>
+</textarea>
+</div>
+</div>
+<hr>
+</hr>
+<div class="row">
+<div class="span6">
+<textarea class="size1 semper">input(checked=true, disabled=false)
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size1 html" readonly=true>
+</textarea>
+</div>
+</div>
+</section>
+<section id="comments">
+<div class="page-header">
+<h2>Comments</h2>
+</div>
+<div class="row">
+<div class="span6">
+<textarea class="size2 semper">// single line comment
+//- invisible single line comment
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size2 html" readonly=true>
+</textarea>
+</div>
+</div>
+<hr>
+</hr>
+<div class="row">
+<div class="span6">
+<textarea class="size4 semper">// block comment
+ h1 hello world
+//- invisible block comment
+ h2 how are you?
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size4 html" readonly=true>
+</textarea>
+</div>
+</div>
+<hr>
+</hr>
+<div class="row">
+<div class="span6">
+<textarea class="size2 semper">// if lt IE 8
+ script(src='/ie.js')
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size2 html" readonly=true>
+</textarea>
+</div>
+</div>
+</section>
+<section id="if">
+<div class="page-header">
+<h2>conditionals</h2>
+</div>
+<div class="row">
+<div class="span6">
+<textarea class="size4 semper">+person
+ h1 Hello #{name}
+ +birthdate
+   h3
+     present
+       | Happy birthday for the #{current}
+     empty
+       My name is Jim
+</textarea>
+<textarea class="size1 json">{&quot;person&quot;: {&quot;name&quot;: &quot;Bob&quot;, &quot;birthdate&quot;: null}}
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size6 html" readonly=true>
+</textarea>
+</div>
+</div>
+<hr>
+</hr>
+<div class="row">
+<div class="span6">
+<textarea class="size2 semper">unless errors
+ p no errors
+</textarea>
+<textarea class="size1 json">{&quot;errors&quot;: false}
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size4 html" readonly=true>
+</textarea>
+</div>
+</div>
+</section>
+<section id="for">
+<div class="page-header">
+<h2>Looping</h2>
+</div>
+<div class="row">
+<div class="span6">
+<textarea class="size4 semper">+books
+ each
+   option(value=&quot;#{number}&quot;) Book #{name}
+</textarea>
+<textarea class="size3 json">{&quot;books&quot;: [{&quot;number&quot;: &quot;1&quot;, &quot;name&quot;: &quot;A&quot;}, {&quot;number&quot;: &quot;2&quot;, &quot;name&quot;: &quot;B&quot;}, {&quot;number&quot;: &quot;3&quot;, &quot;name&quot;: &quot;C&quot;}]}
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size5 html" readonly=true>
+</textarea>
+</div>
+</div>
+<hr>
+</hr>
+<div class="row">
+<div class="span6">
+<textarea class="size5 semper">+books
+ present
+   ul
+     each
+       li= current
+ empty
+   h3 sorry, no books!
+</textarea>
+<textarea class="size1 json">{&quot;books&quot;: []}
+</textarea>
+</div>
+<div class="span6 right">
+<textarea class="size7 html" readonly=true>
+</textarea>
+</div>
+</div>
+</section>
+</div>
+<footer id="about">
+<p>
+by <strong>cjheath</strong>&nbsp;
+This page shamelessly stolen from Jade by naltatis
+</p>
+<p>
+follow me on&nbsp;
+<a href="https://github.com/cjheath" title="cjheath on github">github</a>
+ and&nbsp;
+<a href="https://twitter.com/cliffordheath" title="cjheath on twitter">twitter</a>
+</p>
+<p>
+<a class="FlattrButton" rev="flattr;button:compact" href="https://github.com/cjheath/semper-syntax-docs" lang="de" title="interactive semper Syntax Documentation">
+</a>
+</p>
+</footer>
+<script>(function() {
+   var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
+   s.type = 'text/javascript';
+   s.async = true;
+   s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
+   t.parentNode.insertBefore(s, t);
+})();
+</script>
+<script type="text/javascript">var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-33399084-1']);
+_gaq.push(['_trackPageview']);
+(function() {
+ var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+ ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+ var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+</script>
+</body>
+</html>
