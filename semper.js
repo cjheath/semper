@@ -80,7 +80,7 @@
 	      s.pop().size = parsed.length-t.pos;// Subtree size includes the current node
 	  },
 	  push = function(o) {			// Push a compiled instruction, calculating subtree size
-	    if (o.nw == '') return;		// Disregard blank lines
+	    if (o.nw === '') return;		// Disregard blank lines
 	    o.pos = parsed.length;		// Record the position of this instruction
 	    pop(o.level);
 	    parsed.push(o);
@@ -170,7 +170,7 @@
 	    var top = null,		// Reference to the top of the stack
 		text = '';
 
-	    if (nw == '')
+	    if (nw === '')
 	      return '';
 
 	    // Pop back to the level of the current line, emitting closing tags
@@ -217,7 +217,7 @@
 
 	      // Conditionals:
 	      case cmd == 'empty' || cmd == 'present':
-		if ((cmd == 'empty') == (!current || (typeof current === 'object' && current.length == 0)))
+		if ((cmd == 'empty') == (!current || (typeof current === 'object' && current.length === 0)))
 		  text += expand(template, template[pos+1].pos, current);
 		stack.push({level: level, close:'', mode: 'skip'});
 		break;
