@@ -5,7 +5,7 @@
 //https://github.com/umdjs/umd/blob/master/returnExports.js#L40-L60
 ;(function (root, factory) {
     if (typeof exports === 'object') {
-        //node.js / browserify
+        // node.js / browserify
         module.exports = factory();
     } else if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
@@ -77,7 +77,7 @@
 	  s = [], t,
 	  pop = function(l) {
 	    while ((t = s[s.length-1]) && t.level >= l)
-	      s.pop().size = parsed.length-t.pos;// Subtree size includes the current node
+	      s.pop().size = parsed.length-t.pos;// Subtree size includes the current instruction
 	  },
 	  push = function(o) {			// Push a compiled instruction, calculating subtree size
 	    if (o.nw === '') return;		// Disregard blank lines
@@ -165,8 +165,8 @@
 
       return template.			// Map each line of the template into output
 	slice(first, first+limit).	// Process just the requested part
-	map(function(node) {
-	  with (node) {
+	map(function(i) {		// Walk through each instruction
+	  with (i) {
 	    var top = null,		// Reference to the top of the stack
 		text = '';
 
